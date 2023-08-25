@@ -5,23 +5,41 @@ const db = require('../models')
 const User = db.users
 const Bootcamp = db.bootcamps
 
-// Crear y Guardar Usuarios
-exports.createUser = (user) => {
-  return User.create({
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email
-    })
+const bcrypt = require('bcryptjs')
+
+
+// Crear y guardar usuarios
+exports.createUser = (req, res) => {
+  if(req.body.password.trim().length<8){
+    res.status(400).send({
+      message: "La password debe ser mayor o igul a 8 caracteres!"
+    });
+    return;
+  }
+  if(!req.body.firstName || !req.body.lastName || !req.body.email || !req.body.password){
+    res.status(400).send({
+      message: "Todos los campos son requeridos!"
+    });
+    return;
+  }
+
+  const user = {
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+    password: bcrypt.hashSync(req.body.password)
+  }
+
+  return User.create(user)
     .then(user => {
-      console.log(`>> Se ha creado el usuario: ${JSON.stringify(user, null, 4)}`)
-      return user
+      res.send(user)
     })
     .catch(err => {
-      console.log(`>> Error al crear el usuario ${err}`)
+      return err;
     })
 }
 
-// obtener los bootcamp de un usuario
+// Obtener los bootcamp de un usuario
 exports.findUserById = (userId) => {
   return User.findByPk(userId, {
       include: [{
@@ -41,7 +59,7 @@ exports.findUserById = (userId) => {
     })
 }
 
-// obtener todos los Usuarios incluyendo los bootcamp
+// Obtener todos los usuarios incluyendo los bootcamp
 exports.findAll = () => {
   return User.findAll({
     include: [{
@@ -68,8 +86,7 @@ exports.updateUserById = (userId, fName, lName) => {
       }
     })
     .then(user => {
-      console.log(`>> Se ha actualizado el usuario: ${JSON.stringify(user, null, 4)}`)
-      return user
+      return {"id": userId}
     })
     .catch(err => {
       console.log(`>> Error mientras se actualizaba el usuario: ${err}`)
@@ -84,7 +101,6 @@ exports.deleteUserById = (userId) => {
       }
     })
     .then(user => {
-      console.log(`>> Se ha eliminado el usuario: ${JSON.stringify(user, null, 4)}`)
       return user
     })
     .catch(err => {

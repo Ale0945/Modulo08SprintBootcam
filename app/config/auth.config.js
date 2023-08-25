@@ -1,0 +1,1 @@
+exports.secretKey = 'private_key'

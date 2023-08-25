@@ -2,42 +2,47 @@ module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('users', {
     firstName: {
       type: DataTypes.STRING,
+      allowNull: false,
       validate: {
         notEmpty: {
-          args: true,
-          msg: "El Campo del nombre es requerido"
-        },
-      },
+          msg: "El campo del nombre es requerido"
+        }
+      }
     },
     lastName: {
       type: DataTypes.STRING,
+      allowNull: false,
       validate: {
         notEmpty: {
-          args: true,
-          msg: "El Campo del apellido es requerido"
-        },
-      },
+          msg: "El campo del apellido es requerido"
+        }
+      }
     },
     email: {
       type: DataTypes.STRING,
+      allowNull: false,
+      unique: {
+        msg: 'Correo electrónico ya registrado'
+      },
       validate: {
         notEmpty: {
-          args: true,
-          msg: "el correo electronico es requerido"
+          msg: "El correo electrónico es requerido"
         },
         isEmail: {
-          args: true,
-          msg: 'Formato de correo invalido'
+          msg: 'Formato de correo electrónico inválido'
         }
-      },
-      unique: {
-        args: true,
-        msg: 'correo electronico actualmente registrado en la base de datos!'
       }
-
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: "La contraseña es requerida"
+        }
+      }
     }
+  });
 
-  })
-
-  return User
-}
+  return User;
+};

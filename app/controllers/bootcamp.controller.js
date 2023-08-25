@@ -1,56 +1,56 @@
-const {
-  users,
-  bootcamps
-} = require('../models')
-const db = require('../models')
-const Bootcamp = db.bootcamps
-const User = db.users
+const { users, bootcamps } = require('../models');
+const db = require('../models');
+const Bootcamp = db.bootcamps;
+const User = db.users;
 
-// Crear y guardar un nuevo bootcamp
-exports.createBootcamp = (bootcamp) => {
-  return Bootcamp.create({
+exports.createBootcamp = async (bootcamp) => {
+  try {
+    const createdBootcamp = await Bootcamp.create({
       title: bootcamp.title,
       cue: bootcamp.cue,
       description: bootcamp.description,
-    })
-    .then(bootcamp => {
-      console.log(`>> Creado el bootcamp: ${JSON.stringify(bootcamp, null, 4)}`)
-      return bootcamp
-    })
-    .catch(err => {
-      console.log(`>> Error al crear el bootcamp: ${err}`)
-    })
-}
-
-// Agregar un Usuario al Bootcamp
-exports.addUser = (bootcampId, userId) => {
-  return Bootcamp.findByPk(bootcampId)
-    .then((bootcamp) => {
-      if (!bootcamp) {
-        console.log("No se encontro el Bootcamp!");
-        return null;
-      }
-      return User.findByPk(userId).then((user) => {
-        if (!user) {
-          console.log("Usuario no encontrado!");
-          return null;
-        }
-        bootcamp.addUser(user);
-        console.log('***************************')
-        console.log(` Agregado el usuario id=${user.id} al bootcamp con id=${bootcamp.id}`);
-        console.log('***************************')
-        return bootcamp;
-      });
-    })
-    .catch((err) => {
-      console.log(">> Error mientras se estaba agregando Usuario al Bootcamp", err);
     });
+
+    console.log(`>> Creado el bootcamp: ${JSON.stringify(createdBootcamp, null, 4)}`);
+    return createdBootcamp;
+  } catch (err) {
+    console.log(">> Error al crear el bootcamp:", err);
+    throw err; 
+  }
 };
 
+exports.addUser = async (bootcampId, userId) => {
+  try {
+    const bootcamp = await Bootcamp.findByPk(bootcampId);
 
-// obtener los bootcamp por id 
-exports.findById = (Id) => {
-  return Bootcamp.findByPk(Id, {
+    if (!bootcamp) {
+      console.log("No se encontró el Bootcamp!");
+      return null;
+    }
+
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      console.log("Usuario no encontrado!");
+      return null;
+    }
+
+    await bootcamp.addUser(user);
+
+    console.log('***************************');
+    console.log(` Agregado el usuario id=${user.id} al bootcamp con id=${bootcamp.id}`);
+    console.log('***************************');
+
+    return bootcamp;
+  } catch (err) {
+    console.log(">> Error mientras se estaba agregando Usuario al Bootcamp", err);
+    throw err;
+  }
+};
+
+exports.findById = async (Id) => {
+  try {
+    const bootcamp = await Bootcamp.findByPk(Id, {
       include: [{
         model: User,
         as: "users",
@@ -58,30 +58,32 @@ exports.findById = (Id) => {
         through: {
           attributes: [],
         }
-      }, ],
-    })
-    .then(bootcamp => {
-      return bootcamp
-    })
-    .catch(err => {
-      console.log(`>> Error mientras se encontraba el bootcamp: ${err}`)
-    })
-}
+      }],
+    });
 
-// obtener todos los Usuarios incluyendo los Bootcamp
-exports.findAll = () => {
-  return Bootcamp.findAll({
-    include: [{
-      model: User,
-      as: "users",
-      attributes: ["id", "firstName", "lastName"],
-      through: {
-        attributes: [],
-      }
-    }, ],
-  }).then(bootcamps => {
-    return bootcamps
-  }).catch((err) => {
-    console.log(">> Error Buscando los Bootcamps: ", err);
-  });
-}
+    return bootcamp;
+  } catch (err) {
+    console.log(`>> Error mientras se encontraba el bootcamp:`, err);
+    throw err;
+  }
+};
+
+exports.findAll = async () => {
+  try {
+    const bootcamps = await Bootcamp.findAll({
+      include: [{
+        model: User,
+        as: "users",
+        attributes: ["id", "firstName", "lastName"],
+        through: {
+          attributes: [],
+        }
+      }],
+    });
+
+    return bootcamps;
+  } catch (err) {
+    console.log(">> Error Buscando Bootcamps:", err);
+    throw err;
+  }
+};
